@@ -1,0 +1,7 @@
+.modal-dialog {
+    min-width: 300px;
+}
+
+input+label {
+    margin-top: 5px;
+}

@@ -1,14 +1,30 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { Button, FormGroup, FormControl, ControlLabel, Modal } from 'react-bootstrap';
+import './Editor.css';
 
-//passed in props: onHide, recipe, onSubmit
+//passed in props: onHide, recipe(when needed), onSubmit
 class Editor extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
         recipeName: this.props.recipe.name,
-        ingredientList: this.props.recipe.ingredients.join()
+        ingredientList: this.props.recipe.ingredients.join(' ')
     };
+  }
+
+  preSubmit(){
+    //make clean array of ingredient strings
+    let returnArr = this.state.ingredientList.split(/[ ,]+/);
+    //return nice data
+    this.props.onSubmit(
+      {
+        name: this.state.recipeName,
+        ingredients: returnArr
+      }
+    );
+    //unmount editor component
+    ReactDOM.unmountComponentAtNode( document.getElementById('mountPoint') )
   }
 
   render() {
@@ -45,7 +61,7 @@ class Editor extends React.Component {
         </Modal.Body>
       
         <Modal.Footer>
-          <Button onClick={ ()=> this.props.onSubmit(this.state) }>Submit</Button>
+          <Button onClick={ ()=> this.preSubmit()  }>Submit</Button>
           <Button onClick={ this.props.onHide }>Close</Button>
         </Modal.Footer>
 

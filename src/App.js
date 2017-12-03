@@ -8,6 +8,8 @@ import './App.css';
 class App extends Component {
   constructor(props) {
     super(props);
+    this.addingNew = false;
+    this.showWhenEmpty = <Panel header='No recipes, boohoo.' bsStyle='danger' />;
     this.state = {
       recipes: [
         {
@@ -32,12 +34,22 @@ class App extends Component {
     ReactDOM.unmountComponentAtNode( document.getElementById('mountPoint') )
   }
   open() {
-    console.log(this.state.activeKey);
-    ReactDOM.render(<Editor
+    switch(this.addingNew){
+      case true:
+        ReactDOM.render(<Editor
+                          onHide={ this.close }
+                          recipe={ {name:'', ingredients:[]} }
+                          onSubmit={ data => this.onSubmit(data) }
+                    />, document.getElementById('mountPoint'));
+        break;
+      default:
+        ReactDOM.render(<Editor
                           onHide={ this.close }
                           recipe={ this.state.recipes[this.state.activeKey] }
                           onSubmit={ data => this.onSubmit(data) }
                     />, document.getElementById('mountPoint'));
+        break;
+    }
   }
   //recipe viewing functions
   handleSelect(activeKey) {
@@ -51,15 +63,34 @@ class App extends Component {
   //handle submission from Editor component
   onSubmit(data){
     console.log('App has received: ', data);
+    //get recipe data from state then return modified
+    let newRecipeArr = this.state.recipes;
+    
+    if (!this.addingNew){
+      newRecipeArr[this.state.activeKey] = {
+        name: data.name,
+        ingredients: data.ingredients
+      };
+      this.setState({ recipes: newRecipeArr });
+    }
+    else{
+      newRecipeArr.push(
+        {
+          name: data.name,
+          ingredients: data.ingredients
+        }
+      );
+      this.setState({ recipes: newRecipeArr });
+      this.addingNew = false;
+    }
   }
 
   render() {
-    //try moving this out of the render function later
-    let showWhenEmpty = <Panel header='No recipes, boohoo.' bsStyle='danger' />;
     //make an array of jsx panels to insert into panelgroup component below
     let recipePanels = this.state.recipes.map((recipeObj,recipeIndex)=>{
         return (
           <Panel header={recipeObj.name} eventKey={recipeIndex} key={recipeIndex}>
+          
             <ListGroup fill>
               {
                 recipeObj.ingredients.map((ingredient,ingredientIndex)=>{
@@ -70,9 +101,11 @@ class App extends Component {
                 )
               }
               <ListGroupItem>
+
                 <Button onClick={ ()=>this.open() }>Edit Recipe</Button>
                 {/* <Button onClick={ ()=>{ this.deleteRecipe(recipeIndex) } }>Delete Recipe</Button> */}
                 <Button onClick={ ()=>{ this.deleteRecipe(this.state.activeKey) } }>Delete Recipe</Button> 
+
               </ListGroupItem>
 
             </ListGroup>
@@ -87,11 +120,15 @@ class App extends Component {
 
         <div id="mountPoint"></div>
 
-        { this.state.recipes.length ? undefined : showWhenEmpty }
+        { this.state.recipes.length ? undefined : this.showWhenEmpty }
 
-        <PanelGroup activeKey={this.state.activeKey} onSelect={ (activeKey)=> this.handleSelect(activeKey) } accordion>
+        <PanelGroup activeKey={this.state.activeKey} onSelect={ activeKey => this.handleSelect(activeKey) } accordion>
           {recipePanels}
         </PanelGroup>
+
+        <Button onClick={ ()=>{ this.addingNew = true; this.open() } }>
+          Add Recipe
+        </Button>
 
       </div>
     );

@@ -6,6 +6,7 @@
     /* flex-direction: column; */
     flex-wrap: wrap;
     /* background-color: black; */
+    min-width: 300px;
 }
 
 .panel-group{
@@ -13,4 +14,8 @@
 }
 .panel-body{
     overflow: auto;
+}
+/* the plus operator applies styles to elements with the class that are directly after the first class */
+.list-group-item .btn+.btn{
+    margin-left: 5px;
 }
