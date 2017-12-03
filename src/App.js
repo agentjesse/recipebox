@@ -1,54 +1,101 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Button, Modal } from 'react-bootstrap';
+import { Button, PanelGroup, Panel, ListGroupItem, ListGroup } from 'react-bootstrap';
+import Editor from './Editor';
 import './App.css';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showModal:false
+      recipes: [
+        {
+          name: 'Cake',
+          ingredients: ['flour','eggs','sugar','cocoa']
+        },
+        {
+          name: 'Cookie',
+          ingredients: ['flour','butter','sugar','love']
+        },
+        {
+          name: 'Pasta',
+          ingredients: ['bacon','eggs','noodles']
+        }
+      ],
+      showModal:false,
+      activeKey: 0
     };
   }
-
+  // modal open/close functions via react dom rendering to refresh state
   close() {
-    this.setState({ showModal: false });
+    ReactDOM.unmountComponentAtNode( document.getElementById('mountPoint') )
   }
   open() {
-    this.setState({ showModal: true });
+    console.log(this.state.activeKey);
+    ReactDOM.render(<Editor
+                          onHide={ this.close }
+                          recipe={ this.state.recipes[this.state.activeKey] }
+                          onSubmit={ data => this.onSubmit(data) }
+                    />, document.getElementById('mountPoint'));
+  }
+  //recipe viewing functions
+  handleSelect(activeKey) {
+    this.setState({ activeKey });
+  }
+  deleteRecipe(index) {
+    let copyRecipes = this.state.recipes;
+    copyRecipes.splice(index,1);
+    this.setState({ recipes:copyRecipes });
+  }
+  //handle submission from Editor component
+  onSubmit(data){
+    console.log('App has received: ', data);
   }
 
   render() {
+    //try moving this out of the render function later
+    let showWhenEmpty = <Panel header='No recipes, boohoo.' bsStyle='danger' />;
+    //make an array of jsx panels to insert into panelgroup component below
+    let recipePanels = this.state.recipes.map((recipeObj,recipeIndex)=>{
+        return (
+          <Panel header={recipeObj.name} eventKey={recipeIndex} key={recipeIndex}>
+            <ListGroup fill>
+              {
+                recipeObj.ingredients.map((ingredient,ingredientIndex)=>{
+                    return(
+                      <ListGroupItem key={ingredientIndex}>{ingredient}</ListGroupItem>
+                    );
+                  }
+                )
+              }
+              <ListGroupItem>
+                <Button onClick={ ()=>this.open() }>Edit Recipe</Button>
+                {/* <Button onClick={ ()=>{ this.deleteRecipe(recipeIndex) } }>Delete Recipe</Button> */}
+                <Button onClick={ ()=>{ this.deleteRecipe(this.state.activeKey) } }>Delete Recipe</Button> 
+              </ListGroupItem>
+
+            </ListGroup>
+
+          </Panel>
+        );
+      }
+    );
 
     return (
-      <div>
+      <div className='App'>
 
-        <Button
-          onClick={ ()=>this.open() }
-        >Launch demo modal
-        </Button>
+        <div id="mountPoint"></div>
 
-        <Modal show={this.state.showModal} onHide={ ()=>this.close() }>
+        { this.state.recipes.length ? undefined : showWhenEmpty }
 
-          <Modal.Header closeButton>
-            <Modal.Title>Modal heading</Modal.Title>
-          </Modal.Header>
-
-          <Modal.Body>
-            <h4>Text in a modal</h4>
-            <p>Cras mattis consectetur purus sit amet fermentum. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta ac consectetur ac, vestibulum at eros.</p>
-          </Modal.Body>
-
-          <Modal.Footer>
-            <Button onClick={ ()=>this.close() }>Close</Button>
-          </Modal.Footer>
-
-        </Modal>
+        <PanelGroup activeKey={this.state.activeKey} onSelect={ (activeKey)=> this.handleSelect(activeKey) } accordion>
+          {recipePanels}
+        </PanelGroup>
 
       </div>
     );
   }
-
 
 }
 
