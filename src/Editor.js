@@ -19,7 +19,7 @@ class Editor extends React.Component {
     //return nice data
     this.props.onSubmit(
       {
-        name: this.state.recipeName,
+        name: this.state.recipeName === '' ? 'Untitled' : this.state.recipeName,
         ingredients: returnArr
       }
     );
