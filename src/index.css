@@ -1,6 +1,7 @@
 html{
   font-size: 16px;
-  /* background-color: black; */
+  background-color: rgb(69, 179, 230);
+  min-width: 300px;
 }
 
 body {
